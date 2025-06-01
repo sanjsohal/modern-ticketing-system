@@ -132,25 +132,7 @@ export const LoginPage: React.FC = () => {
               </div>
             </form>
             
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
-                    Demo Accounts
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-1 gap-3">
-                <div className="text-sm text-gray-500 text-center">
-                  <p>Use email: <span className="font-medium text-gray-900">sarah@example.com</span></p>
-                  <p>Password: <span className="font-medium text-gray-900">password</span></p>
-                </div>
-              </div>
-            </div>
+            
           </CardBody>
         </Card>
       </div>
