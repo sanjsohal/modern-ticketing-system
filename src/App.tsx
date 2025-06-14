@@ -6,6 +6,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { MainLayout } from './components/layout/MainLayout';
 import { Dashboard } from './pages/Dashboard';
 import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
 import { TicketList } from './components/ticket/TicketList';
 import { TicketDetail } from './components/ticket/TicketDetail';
 import { NewTicket } from './components/ticket/NewTicket';
@@ -39,6 +40,7 @@ const AppContent: React.FC = () => {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
       
       {/* Protected routes */}
       <Route
@@ -110,7 +112,7 @@ const AppContent: React.FC = () => {
       {/* Redirect root to dashboard or login based on auth status */}
       <Route
         path="*"
-        element={<Navigate to="/dashboard\" replace />}
+        element={<Navigate to="/dashboard" replace />}
       />
     </Routes>
   );

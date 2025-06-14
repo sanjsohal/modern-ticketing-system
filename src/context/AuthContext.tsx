@@ -1,12 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types';
-import { users, getCurrentUser } from '../data/mockData';
+import { 
+  User,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword
+} from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  signup: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   loading: boolean;
 }
 
@@ -14,7 +21,8 @@ const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   isAuthenticated: false,
   login: async () => false,
-  logout: () => {},
+  signup: async () => false,
+  logout: async () => {},
   loading: true,
 });
 
@@ -26,45 +34,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking for stored authentication
-    const checkAuth = async () => {
-      try {
-        // In a real app, you would validate a token with your backend
-        const storedUser = localStorage.getItem('currentUser');
-        
-        if (storedUser) {
-          // For demo purposes, we're using the first agent user
-          setCurrentUser(getCurrentUser());
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error('Authentication check failed', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setIsAuthenticated(!!user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setLoading(true);
-      // Simulating API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Simple mock authentication
-      const user = users.find(u => u.email === email);
-      
-      if (user) {
-        // In a real app, you would verify the password hash
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        return true;
-      }
-      
-      return false;
+      await signInWithEmailAndPassword(auth, email, password);
+      return true;
     } catch (error) {
       console.error('Login failed', error);
       return false;
@@ -73,14 +56,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('currentUser');
+  const signup = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      await createUserWithEmailAndPassword(auth, email, password);
+      return true;
+    } catch (error) {
+      console.error('Signup failed', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      setLoading(true);
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout failed', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAuthenticated, login, logout, loading }}>
+    <AuthContext.Provider value={{ currentUser, isAuthenticated, login, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
