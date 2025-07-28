@@ -38,7 +38,7 @@ export const SignupPage: React.FC = () => {
     
     try {
       const response = await signup(email, password, name);
-      if (response.user && response.emailVerificationSent) {
+      if (response.emailVerificationSent) {
         navigate('/verify-email', { state: { email } });
       } else {
         setError(response.error || 'Signup failed');
