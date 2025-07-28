@@ -1,4 +1,4 @@
-import {  signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
 interface AuthUser {
@@ -11,6 +11,7 @@ interface AuthUser {
 interface AuthResponse {
   user: AuthUser | null;
   error?: string;
+  emailVerificationSent?: boolean;
 }
 
 class AuthService {
@@ -46,8 +47,6 @@ class AuthService {
 
   private async localLogin(email: string, password: string): Promise<AuthResponse> {
     try {
-      // Here you would implement your local database authentication
-      // For example, using a local API endpoint that checks against your database
       const response = await fetch('/api/auth/local/login', {
         method: 'POST',
         headers: {
@@ -57,6 +56,10 @@ class AuthService {
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 403 && errorData.emailNotVerified) {
+          return { user: null, error: 'Please verify your email before logging in' };
+        }
         throw new Error('Login failed');
       }
 
@@ -69,9 +72,18 @@ class AuthService {
 
   private async iamLogin(email: string, password: string): Promise<AuthResponse> {
     try {
-      // Use existing Firebase authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      
+      // Check if email is verified
+      if (!user.emailVerified) {
+        // Sign out the user immediately since they shouldn't be logged in
+        await auth.signOut();
+        return { 
+          user: null, 
+          error: 'Please verify your email before logging in. Check your inbox for the verification link.' 
+        };
+      }
       
       return {
         user: {
@@ -88,7 +100,6 @@ class AuthService {
 
   private async localSignup(email: string, password: string, name: string): Promise<AuthResponse> {
     try {
-      // Implement local database signup
       const response = await fetch('/api/auth/local/signup', {
         method: 'POST',
         headers: {
@@ -102,7 +113,11 @@ class AuthService {
       }
 
       const data = await response.json();
-      return { user: data.user };
+      return { 
+        user: null, // Don't return user until email is verified
+        emailVerificationSent: true,
+        error: 'Account created! Please check your email and click the verification link to complete registration.'
+      };
     } catch (error) {
       return { user: null, error: 'Failed to create account' };
     }
@@ -110,32 +125,84 @@ class AuthService {
 
   private async iamSignup(email: string, password: string, name: string): Promise<AuthResponse> {
     try {
-      // Use existing Firebase authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update display name
+      if (name) {
+        await updateProfile(userCredential.user, { displayName: name });
+      }
+      
+      // Send email verification
       await sendEmailVerification(userCredential.user);
-      alert('Verification email sent. Please check your inbox.');
+      
+      // Sign out the user immediately - they can't use the app until verified
+      await auth.signOut();
+      
       return {
-        user: {
-          id: userCredential.user.uid,
-          email: userCredential.user.email!,
-          name: name,
-          avatar: userCredential.user.photoURL || undefined,
-        }
+        user: null, // Don't return user until email is verified
+        emailVerificationSent: true,
+        error: 'Account created! Please check your email and click the verification link to complete registration.'
       };
-    } catch (error) {
-      return { user: null, error: 'Failed to create account' };
+    } catch (error: any) {
+      let errorMessage = 'Failed to create account';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'An account with this email already exists';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please choose a stronger password';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address';
+      }
+      
+      return { user: null, error: errorMessage };
     }
   }
 
   private async localLogout(): Promise<void> {
-    // Implement local logout logic
     await fetch('/api/auth/local/logout', { method: 'POST' });
   }
 
   private async iamLogout(): Promise<void> {
-    // Use existing Firebase logout
     await auth.signOut();
+  }
+
+  // Helper method to resend verification email
+  async resendVerificationEmail(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+    if (!this.isLocalDev) {
+      try {
+        // Sign in temporarily to resend verification
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        if (userCredential.user.emailVerified) {
+          await auth.signOut();
+          return { success: false, error: 'Email is already verified. You can now log in.' };
+        }
+        
+        await sendEmailVerification(userCredential.user);
+        await auth.signOut();
+        
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: 'Failed to resend verification email. Please check your credentials.' };
+      }
+    } else {
+      try {
+        const response = await fetch('/api/auth/local/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        
+        if (response.ok) {
+          return { success: true };
+        } else {
+          return { success: false, error: 'Failed to resend verification email' };
+        }
+      } catch (error) {
+        return { success: false, error: 'Failed to resend verification email' };
+      }
+    }
   }
 }
 
-export const authService = new AuthService(); 
+export const authService = new AuthService();
