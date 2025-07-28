@@ -37,7 +37,7 @@ export const SignupPage: React.FC = () => {
     setError('');
     
     try {
-      const success = await signup(email, password);
+      const success = await signup(email, password, name);
       if (success) {
         navigate('/dashboard');
       } else {
