@@ -2,7 +2,7 @@ import React from 'react';
 import { TicketOverview } from '../components/dashboard/TicketOverview';
 import { RecentTickets } from '../components/dashboard/RecentTickets';
 import { Card, CardHeader, CardTitle, CardBody } from '../components/ui/Card';
-import { BarChart2, Users, Clock, TrendingUp } from 'lucide-react';
+import { Users, Clock, TrendingUp } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   return (

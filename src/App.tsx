@@ -7,6 +7,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { Dashboard } from './pages/Dashboard';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { TicketList } from './components/ticket/TicketList';
 import { TicketDetail } from './components/ticket/TicketDetail';
 import { NewTicket } from './components/ticket/NewTicket';
@@ -41,6 +42,7 @@ const AppContent: React.FC = () => {
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       
       {/* Protected routes */}
       <Route

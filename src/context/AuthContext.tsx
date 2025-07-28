@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { authService } from '../services/authService';
+import { AuthResponse, authService } from '../services/authService';
 
 interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  signup: (email: string, password: string, name: string) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -16,7 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   isAuthenticated: false,
   login: async () => false,
-  signup: async () => false,
+  signup: async () => ({ user: null, error: 'Not implemented' }),
   logout: async () => {},
   loading: true,
 });
@@ -54,17 +54,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, name: string): Promise<AuthResponse> => {
     try {
       setLoading(true);
       const response = await authService.signup(email, password, name);
-      if (response.user) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Signup failed', error);
-      return false;
+      return response;
+    } catch (err) {
+      console.error('Signup failed', err);
+      return { user: null, error: err instanceof Error ? err.message : String(err) };
     } finally {
       setLoading(false);
     }

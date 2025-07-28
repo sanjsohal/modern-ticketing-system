@@ -8,7 +8,7 @@ interface AuthUser {
   avatar?: string;
 }
 
-interface AuthResponse {
+export interface AuthResponse {
   user: AuthUser | null;
   error?: string;
   emailVerificationSent?: boolean;

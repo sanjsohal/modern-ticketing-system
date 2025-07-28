@@ -37,11 +37,11 @@ export const SignupPage: React.FC = () => {
     setError('');
     
     try {
-      const success = await signup(email, password, name);
-      if (success) {
-        navigate('/dashboard');
+      const response = await signup(email, password, name);
+      if (response.user && response.emailVerificationSent) {
+        navigate('/verify-email', { state: { email } });
       } else {
-        setError('Failed to create account');
+        setError(response.error || 'Signup failed');
       }
     } catch (err) {
       setError('An error occurred during signup');
