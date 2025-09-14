@@ -217,7 +217,7 @@ class AuthService {
   }
 
   private async createUserInDatabase(user: AuthUser): Promise<void> {
-    console.log(${this.apiBaseUrl});
+    console.log(`${this.apiBaseUrl}`);
     const response = await fetch(`${this.apiBaseUrl}/api/users/register`, {
       method: 'POST',
       headers: {
