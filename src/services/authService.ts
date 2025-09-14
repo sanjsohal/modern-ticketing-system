@@ -16,9 +16,11 @@ export interface AuthResponse {
 
 class AuthService {
   private isLocalDev: boolean;
+  private apiBaseUrl: string;
 
   constructor() {
     this.isLocalDev = import.meta.env.DEV;
+    this.apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -112,7 +114,6 @@ class AuthService {
         throw new Error('Signup failed');
       }
 
-      const data = await response.json();
       return { 
         user: null, // Don't return user until email is verified
         emailVerificationSent: true,
@@ -216,7 +217,7 @@ class AuthService {
   }
 
   private async createUserInDatabase(user: AuthUser): Promise<void> {
-    const response = await fetch('/api/users/register', {
+    const response = await fetch(`${this.apiBaseUrl}/api/users/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
