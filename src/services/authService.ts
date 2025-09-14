@@ -131,6 +131,17 @@ class AuthService {
       if (name) {
         await updateProfile(userCredential.user, { displayName: name });
       }
+
+      try {
+        await this.createUserInDatabase({
+          id: userCredential.user.uid,
+          email: userCredential.user.email!,
+          name: name,
+          avatar: userCredential.user.photoURL || undefined,
+        })
+      } catch (error) {
+        console.error('Failed to create user in database', error);
+      }
       
       // Send email verification
       await sendEmailVerification(userCredential.user);
@@ -203,6 +214,27 @@ class AuthService {
       }
     }
   }
-}
+
+  private async createUserInDatabase(user: AuthUser): Promise<void> {
+    const response = await fetch('/api/users/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        firebaseUid: user.id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        emailVerified: false, // Will be updated when email is verified
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Database user creation failed: ${errorData.message || 'Unknown error'}`);
+    }
+  }
+  }
 
 export const authService = new AuthService();
