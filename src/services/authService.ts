@@ -86,19 +86,7 @@ class AuthService {
           error: 'Please verify your email before logging in. Check your inbox for the verification link.' 
         };
       }
-      
-      // Notify backend that email is verified (best-effort)
-      try {
-        const idToken = await user.getIdToken();
-        await this.notifyEmailVerified({
-          firebaseUid: user.uid,
-          email: user.email || '',
-          idToken,
-        });
-      } catch (notifyErr) {
-        // Non-fatal: proceed with login even if backend update fails
-        console.warn('Failed to notify backend about email verification', notifyErr);
-      }
+     
       
       return {
         user: {
@@ -251,34 +239,6 @@ class AuthService {
     }
   }
   
-  private async notifyEmailVerified(params: { firebaseUid: string; email: string; idToken: string }): Promise<void> {
-    if (!this.apiBaseUrl) {
-      // If no API base URL is configured, skip silently
-      return;
-    }
-    const response = await fetch(`${this.apiBaseUrl}/api/users/verifyemail`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${params.idToken}`,
-      },
-      body: JSON.stringify({
-        firebaseUid: params.firebaseUid,
-        email: params.email,
-        emailVerified: true,
-      }),
-    });
-    if (!response.ok) {
-      let message = 'Unknown error';
-      try {
-        const err = await response.json();
-        message = err.message || message;
-      } catch {
-        // ignore
-      }
-      throw new Error(`Failed to notify backend about email verification: ${message}`);
-    }
-  }
   }
 
 export const authService = new AuthService();
