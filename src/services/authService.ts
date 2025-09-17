@@ -87,6 +87,15 @@ class AuthService {
         };
       }
      
+      // Send Firebase ID token to backend for post-login updates/sync
+      try {
+        const idToken = await user.getIdToken(true);
+        await this.notifyLoginWithToken(idToken);
+      } catch (tokenSyncError) {
+        console.error('Failed to sync login with backend', tokenSyncError);
+        // Do not block user login if backend sync fails
+      }
+     
       
       return {
         user: {
@@ -236,6 +245,25 @@ class AuthService {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Database user creation failed: ${errorData.message || 'Unknown error'}`);
+    }
+  }
+  
+  // Notify backend about successful login using Firebase ID token
+  private async notifyLoginWithToken(idToken: string): Promise<void> {
+    if (!this.apiBaseUrl) return; // Skip if backend base URL is not configured
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/api/users/me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+        },
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('Backend login sync failed:', response.status, errorText);
+      }
+    } catch (err) {
+      console.error('Error calling backend for login sync:', err);
     }
   }
   
