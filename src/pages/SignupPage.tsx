@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Image as ImageIcon, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Card, CardBody } from '../components/ui/Card';
@@ -10,6 +10,8 @@ export const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
@@ -37,7 +39,7 @@ export const SignupPage: React.FC = () => {
     setError('');
     
     try {
-      const response = await signup(email, password, name);
+      const response = await signup(email, password, name, avatarFile);
       if (response.emailVerificationSent) {
         navigate('/verify-email', { state: { email } });
       } else {
@@ -154,6 +156,84 @@ export const SignupPage: React.FC = () => {
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     placeholder="••••••••"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="avatar" className="block text-sm font-medium text-gray-700">
+                  Avatar (optional)
+                </label>
+                <div className="mt-1 flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-300 flex items-center justify-center">
+                      {avatarPreview ? (
+                        <img 
+                          src={avatarPreview} 
+                          alt="Avatar preview" 
+                          className="h-full w-full object-cover" 
+                        />
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="avatar"
+                      className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 inline-block"
+                    >
+                      Choose file
+                    </label>
+                    <input
+                      id="avatar"
+                      name="avatar"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setAvatarFile(file);
+                        if (file) {
+                          // Validate file size (2MB limit)
+                          if (file.size > 2 * 1024 * 1024) {
+                            setError('Avatar file must be smaller than 2MB');
+                            setAvatarFile(null);
+                            setAvatarPreview(null);
+                            return;
+                          }
+                          // Validate file type
+                          if (!file.type.startsWith('image/')) {
+                            setError('Please select an image file');
+                            setAvatarFile(null);
+                            setAvatarPreview(null);
+                            return;
+                          }
+                          const objectUrl = URL.createObjectURL(file);
+                          setAvatarPreview(objectUrl);
+                          setError(''); // Clear any previous errors
+                        } else {
+                          setAvatarPreview(null);
+                        }
+                      }}
+                    />
+                    {avatarFile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAvatarFile(null);
+                          setAvatarPreview(null);
+                          const fileInput = document.getElementById('avatar') as HTMLInputElement;
+                          if (fileInput) fileInput.value = '';
+                        }}
+                        className="ml-2 text-red-600 hover:text-red-800"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      PNG, JPG up to 2MB
+                    </p>
+                  </div>
                 </div>
               </div>
 

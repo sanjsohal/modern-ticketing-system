@@ -1,4 +1,5 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth } from '../config/firebase';
 
 interface AuthUser {
@@ -17,10 +18,12 @@ export interface AuthResponse {
 class AuthService {
   private isLocalDev: boolean;
   private apiBaseUrl: string;
+  private storage;
 
   constructor() {
     this.isLocalDev = import.meta.env.DEV;
     this.apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    this.storage = getStorage();
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -31,11 +34,11 @@ class AuthService {
     }
   }
 
-  async signup(email: string, password: string, name: string): Promise<AuthResponse> {
+  async signup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
     if (this.isLocalDev) {
-      return this.localSignup(email, password, name);
+      return this.localSignup(email, password, name, avatarFile);
     } else {
-      return this.iamSignup(email, password, name);
+      return this.iamSignup(email, password, name, avatarFile);
     }
   }
 
@@ -110,14 +113,37 @@ class AuthService {
     }
   }
 
-  private async localSignup(email: string, password: string, name: string): Promise<AuthResponse> {
+  private async uploadAvatar(file: File, userId: string): Promise<string> {
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `avatars/${userId}.${fileExtension}`;
+    const storageRef = ref(this.storage, fileName);
+    
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  }
+
+  private async localSignup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
     try {
+      // For local development, we'll create a temporary user ID for avatar upload
+      const tempUserId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      let avatarUrl: string | undefined;
+
+      // Upload avatar if provided
+      if (avatarFile) {
+        try {
+          avatarUrl = await this.uploadAvatar(avatarFile, tempUserId);
+        } catch (uploadError) {
+          console.error('Avatar upload failed:', uploadError);
+          return { user: null, error: 'Failed to upload avatar. Please try again.' };
+        }
+      }
+
       const response = await fetch('/api/auth/local/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, name, avatar: avatarUrl }),
       });
 
       if (!response.ok) {
@@ -134,21 +160,34 @@ class AuthService {
     }
   }
 
-  private async iamSignup(email: string, password: string, name: string): Promise<AuthResponse> {
+  private async iamSignup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update display name
-      if (name) {
-        await updateProfile(userCredential.user, { displayName: name });
+      let avatarUrl: string | undefined;
+
+      // Upload avatar if provided
+      if (avatarFile) {
+        try {
+          avatarUrl = await this.uploadAvatar(avatarFile, userCredential.user.uid);
+        } catch (uploadError) {
+          console.error('Avatar upload failed:', uploadError);
+          // Continue with signup even if avatar upload fails
+        }
       }
+      
+      // Update display name and photo URL
+      const updateData: any = { displayName: name };
+      if (avatarUrl) {
+        updateData.photoURL = avatarUrl;
+      }
+      await updateProfile(userCredential.user, updateData);
 
       try {
         await this.createUserInDatabase({
           id: userCredential.user.uid,
           email: userCredential.user.email!,
           name: name,
-          avatar: userCredential.user.photoURL || undefined,
+          avatar: avatarUrl || userCredential.user.photoURL || undefined,
         })
       } catch (error) {
         console.error('Failed to create user in database', error);

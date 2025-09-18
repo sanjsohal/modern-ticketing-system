@@ -7,7 +7,7 @@ interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string) => Promise<AuthResponse>;
+  signup: (email: string, password: string, name: string, avatarFile?: File | null) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -54,10 +54,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<AuthResponse> => {
+  const signup = async (email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> => {
     try {
       setLoading(true);
-      const response = await authService.signup(email, password, name);
+      const response = await authService.signup(email, password, name, avatarFile);
       return response;
     } catch (err) {
       console.error('Signup failed', err);
