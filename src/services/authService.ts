@@ -114,12 +114,16 @@ class AuthService {
   }
 
   private async uploadAvatar(file: File, userId: string): Promise<string> {
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `avatars/${userId}.${fileExtension}`;
-    const storageRef = ref(this.storage, fileName);
-    
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("userId", userId);
+
+    const response = await fetch(`${this.apiBaseUrl}/api/avatars/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+  return await response.text(); // this will be avatar URL
   }
 
   private async localSignup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
