@@ -116,7 +116,7 @@ class AuthService {
   private async uploadAvatar(file: File, userId: string): Promise<string> {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("userId", userId);
+    formData.append("firebaseUserId", userId);
 
     const response = await fetch(`${this.apiBaseUrl}/api/avatars/upload`, {
       method: "POST",
