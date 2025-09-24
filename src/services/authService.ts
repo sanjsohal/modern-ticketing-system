@@ -89,6 +89,8 @@ class AuthService {
           error: 'Please verify your email before logging in. Check your inbox for the verification link.' 
         };
       }
+
+      const photoUrl =await this.getPhotoUrlByFirebaseUid(user.uid);
      
       // Send Firebase ID token to backend for post-login updates/sync
       try {
@@ -105,7 +107,7 @@ class AuthService {
           id: user.uid,
           email: user.email!,
           name: user.displayName || undefined,
-          avatar: user.photoURL || undefined,
+          avatar: photoUrl || undefined,
         },
       };
     } catch (error) {
@@ -270,7 +272,6 @@ class AuthService {
   }
 
   private async createUserInDatabase(user: AuthUser): Promise<void> {
-    console.log(`${this.apiBaseUrl}`);
     const response = await fetch(`${this.apiBaseUrl}/api/users/register`, {
       method: 'POST',
       headers: {
@@ -290,6 +291,26 @@ class AuthService {
       throw new Error(`Database user creation failed: ${errorData.message || 'Unknown error'}`);
     }
   }
+
+  private async getPhotoUrlByFirebaseUid(firebaseUserId: string): Promise<string> {
+    console.log(`${this.apiBaseUrl}`);
+  
+    const response = await fetch(`${this.apiBaseUrl}/api/avatars/photo-url/${firebaseUserId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to fetch photo url: ${errorData.message || 'Unknown error'}`);
+    }
+  
+    const data = await response.text(); // since backend returns string
+    return data;
+  }
+  
   
   // Notify backend about successful login using Firebase ID token
   private async notifyLoginWithToken(idToken: string): Promise<void> {
