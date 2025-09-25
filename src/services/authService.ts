@@ -1,4 +1,4 @@
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, getIdToken } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
 interface AuthUser {
@@ -290,7 +290,9 @@ class AuthService {
   }
 
   private async getPhotoUrlByFirebaseUid(firebaseUserId: string): Promise<string> {
-    const token = auth.getIdToken();
+    if (!auth.currentUser) throw new Error("No user signed in");
+    const token = await getIdToken(auth.currentUser, false);
+    console.log(token);
     const response = await fetch(`${this.apiBaseUrl}/api/avatars/photo-url/${firebaseUserId}`, {
       method: 'GET',
       headers: {
