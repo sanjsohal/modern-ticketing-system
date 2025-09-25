@@ -292,7 +292,6 @@ class AuthService {
   private async getPhotoUrlByFirebaseUid(firebaseUserId: string): Promise<string> {
     if (!auth.currentUser) throw new Error("No user signed in");
     const token = await getIdToken(auth.currentUser, false);
-    console.log(token);
     const response = await fetch(`${this.apiBaseUrl}/api/avatars/photo-url/${firebaseUserId}`, {
       method: 'GET',
       headers: {
