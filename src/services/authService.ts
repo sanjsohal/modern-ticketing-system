@@ -1,5 +1,4 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth } from '../config/firebase';
 
 interface AuthUser {
@@ -18,12 +17,10 @@ export interface AuthResponse {
 class AuthService {
   private isLocalDev: boolean;
   private apiBaseUrl: string;
-  private storage;
 
   constructor() {
     this.isLocalDev = import.meta.env.DEV;
     this.apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    this.storage = getStorage();
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -293,12 +290,12 @@ class AuthService {
   }
 
   private async getPhotoUrlByFirebaseUid(firebaseUserId: string): Promise<string> {
-    console.log(`${this.apiBaseUrl}`);
-  
+    const token = auth.getIdToken();
     const response = await fetch(`${this.apiBaseUrl}/api/avatars/photo-url/${firebaseUserId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer '+token,
       },
     });
   
