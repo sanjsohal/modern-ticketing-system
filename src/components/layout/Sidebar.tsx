@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../ui/Avatar';
+import { getAvatarUrl } from '../../utils/serverUtils';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: <BarChart2 size={20} /> },
@@ -79,10 +80,10 @@ export const Sidebar: React.FC = () => {
         {currentUser && (
           <div className="flex items-center px-4 py-3 border-t border-gray-200">
             <div className="flex-shrink-0">
-              <Avatar src={currentUser.avatar} name={currentUser.name} size="sm" />
+              <Avatar src={getAvatarUrl(currentUser.photoURL ?? undefined)} name={currentUser.displayName ?? currentUser.email ?? 'User'} size="sm" />
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <div className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</div>
+              <div className="text-sm font-medium text-gray-900 truncate">{currentUser.displayName ?? currentUser.email}</div>
               <div className="text-xs text-gray-500 truncate">{currentUser.email}</div>
             </div>
             <button
@@ -138,10 +139,10 @@ export const Sidebar: React.FC = () => {
             {currentUser && (
               <div className="absolute bottom-0 w-full flex items-center px-4 py-3 border-t border-gray-200">
                 <div className="flex-shrink-0">
-                  <Avatar src={currentUser.avatar} name={currentUser.name} size="sm" />
+                  <Avatar src={getAvatarUrl(currentUser.photoURL ?? undefined)} name={currentUser.displayName ?? currentUser.email ?? 'User'} size="sm" />
                 </div>
                 <div className="ml-3 min-w-0 flex-1">
-                  <div className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</div>
+                  <div className="text-sm font-medium text-gray-900 truncate">{currentUser.displayName ?? currentUser.email}</div>
                   <div className="text-xs text-gray-500 truncate">{currentUser.email}</div>
                 </div>
                 <button
