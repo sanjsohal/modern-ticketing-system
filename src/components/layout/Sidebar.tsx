@@ -138,7 +138,6 @@ export const Sidebar: React.FC = () => {
             
             {currentUser && (
               <div className="absolute bottom-0 w-full flex items-center px-4 py-3 border-t border-gray-200">
-                <div>${getAvatarUrl(currentUser.photoURL)}</div>
                 <div className="flex-shrink-0">
                   <Avatar src={getAvatarUrl(currentUser.photoURL ?? undefined)} name={currentUser.displayName ?? currentUser.email ?? 'User'} size="sm" />
                 </div>
