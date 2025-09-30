@@ -87,7 +87,16 @@ class AuthService {
         };
       }
 
-      const photoUrl =await this.getPhotoUrlByFirebaseUid(user.uid);
+      const photoUrl = await this.getPhotoUrlByFirebaseUid(user.uid);
+      // Ensure Firebase user profile has the latest photo URL so UI (Sidebar) can read currentUser.photoURL
+      try {
+        if (photoUrl && user.photoURL !== photoUrl) {
+          await updateProfile(user, { photoURL: photoUrl });
+          await user.reload();
+        }
+      } catch (profileUpdateError) {
+        console.error('Failed to update user photoURL', profileUpdateError);
+      }
      
       // Send Firebase ID token to backend for post-login updates/sync
       try {
