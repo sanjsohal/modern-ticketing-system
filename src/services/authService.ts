@@ -199,7 +199,6 @@ class AuthService {
           id: userCredential.user.uid,
           email: userCredential.user.email!,
           name: name,
-          avatar: avatarUrl || userCredential.user.photoURL || undefined,
         })
       } catch (error) {
         console.error('Failed to create user in database', error);
