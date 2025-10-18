@@ -1,16 +1,22 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Ticket, Comment, Attachment } from '../types';
-import { tickets as mockTickets } from '../data/mockData';
+import { 
+  fetchTickets, 
+  createTicketAPI, 
+  updateTicketAPI, 
+  addCommentAPI, 
+  addAttachmentAPI 
+} from '../services/ticketService';
 
 interface TicketContextType {
   tickets: Ticket[];
   loading: boolean;
   error: string | null;
   getTicketById: (id: string) => Ticket | undefined;
-  updateTicket: (updatedTicket: Ticket) => void;
-  createTicket: (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'comments' | 'attachments'>) => Ticket;
-  addComment: (ticketId: string, comment: Omit<Comment, 'id' | 'ticketId' | 'createdAt'>) => void;
-  addAttachment: (ticketId: string, attachment: Omit<Attachment, 'id' | 'ticketId' | 'uploadedAt'>) => void;
+  updateTicket: (updatedTicket: Ticket) => Promise<void>;
+  createTicket: (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'comments' | 'attachments'>) => Promise<Ticket>;
+  addComment: (ticketId: string, comment: Omit<Comment, 'id' | 'ticketId' | 'createdAt'>) => Promise<void>;
+  addAttachment: (ticketId: string, attachment: Omit<Attachment, 'id' | 'ticketId' | 'uploadedAt'>) => Promise<void>;
 }
 
 const TicketContext = createContext<TicketContextType>({
@@ -18,10 +24,10 @@ const TicketContext = createContext<TicketContextType>({
   loading: false,
   error: null,
   getTicketById: () => undefined,
-  updateTicket: () => {},
-  createTicket: () => ({} as Ticket),
-  addComment: () => {},
-  addAttachment: () => {},
+  updateTicket: async () => {},
+  createTicket: async () => ({} as Ticket),
+  addComment: async () => {},
+  addAttachment: async () => {},
 });
 
 export const useTickets = () => useContext(TicketContext);
@@ -32,15 +38,15 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulating API fetch
-    const fetchTickets = async () => {
+    // Fetch tickets from backend API
+    const loadTickets = async () => {
       try {
         setLoading(true);
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        setError(null);
         
-        // In a real app, this would be an API call
-        setTickets(mockTickets);
+        // Fetch tickets from the backend
+        const data = await fetchTickets();
+        setTickets(data);
       } catch (err) {
         setError('Failed to fetch tickets');
         console.error('Error fetching tickets:', err);
@@ -49,78 +55,90 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }
     };
 
-    fetchTickets();
+    loadTickets();
   }, []);
 
   const getTicketById = (id: string) => {
     return tickets.find(ticket => ticket.id === id);
   };
 
-  const updateTicket = (updatedTicket: Ticket) => {
-    setTickets(prevTickets => 
-      prevTickets.map(ticket => 
-        ticket.id === updatedTicket.id 
-          ? { ...updatedTicket, updatedAt: new Date() } 
-          : ticket
-      )
-    );
+  const updateTicket = async (updatedTicket: Ticket) => {
+    try {
+      // Update ticket on backend
+      const updated = await updateTicketAPI(updatedTicket);
+      
+      // Update local state
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => 
+          ticket.id === updated.id ? updated : ticket
+        )
+      );
+    } catch (err) {
+      console.error('Error updating ticket:', err);
+      throw err;
+    }
   };
 
-  const createTicket = (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'comments' | 'attachments'>) => {
-    const now = new Date();
-    const ticket: Ticket = {
-      ...newTicket,
-      id: `ticket-${tickets.length + 1}`,
-      createdAt: now,
-      updatedAt: now,
-      comments: [],
-      attachments: [],
-    };
-
-    setTickets(prevTickets => [...prevTickets, ticket]);
-    return ticket;
+  const createTicket = async (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'comments' | 'attachments'>) => {
+    try {
+      // Create ticket on backend
+      const ticket = await createTicketAPI(newTicket);
+      
+      // Update local state
+      setTickets(prevTickets => [...prevTickets, ticket]);
+      return ticket;
+    } catch (err) {
+      console.error('Error creating ticket:', err);
+      throw err;
+    }
   };
 
-  const addComment = (ticketId: string, comment: Omit<Comment, 'id' | 'ticketId' | 'createdAt'>) => {
-    setTickets(prevTickets => 
-      prevTickets.map(ticket => {
-        if (ticket.id === ticketId) {
-          const newComment: Comment = {
-            id: `comment-${ticket.comments.length + 1}`,
-            ticketId,
-            createdAt: new Date(),
-            ...comment,
-          };
-          return {
-            ...ticket,
-            comments: [...ticket.comments, newComment],
-            updatedAt: new Date(),
-          };
-        }
-        return ticket;
-      })
-    );
+  const addComment = async (ticketId: string, comment: Omit<Comment, 'id' | 'ticketId' | 'createdAt'>) => {
+    try {
+      // Add comment on backend
+      const newComment = await addCommentAPI(ticketId, comment);
+      
+      // Update local state
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => {
+          if (ticket.id === ticketId) {
+            return {
+              ...ticket,
+              comments: [...ticket.comments, newComment],
+              updatedAt: new Date(),
+            };
+          }
+          return ticket;
+        })
+      );
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      throw err;
+    }
   };
 
-  const addAttachment = (ticketId: string, attachment: Omit<Attachment, 'id' | 'ticketId' | 'uploadedAt'>) => {
-    setTickets(prevTickets => 
-      prevTickets.map(ticket => {
-        if (ticket.id === ticketId) {
-          const newAttachment: Attachment = {
-            id: `attachment-${ticket.attachments.length + 1}`,
-            ticketId,
-            uploadedAt: new Date(),
-            ...attachment,
-          };
-          return {
-            ...ticket,
-            attachments: [...ticket.attachments, newAttachment],
-            updatedAt: new Date(),
-          };
-        }
-        return ticket;
-      })
-    );
+  const addAttachment = async (ticketId: string, attachment: Omit<Attachment, 'id' | 'ticketId' | 'uploadedAt'>) => {
+    try {
+      // Add attachment on backend
+      const newAttachment = await addAttachmentAPI(ticketId, attachment);
+      
+      // Update local state
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => {
+          if (ticket.id === ticketId) {
+            return {
+              ...ticket,
+              attachments: [...ticket.attachments, newAttachment],
+              updatedAt: new Date(),
+            };
+          }
+          return ticket;
+        })
+      );
+    } catch (err) {
+      console.error('Error adding attachment:', err);
+      throw err;
+    }
   };
 
   return (

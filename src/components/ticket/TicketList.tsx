@@ -10,7 +10,7 @@ import { Ticket, TicketStatus, TicketPriority } from '../../types';
 import { users } from '../../data/mockData';
 
 export const TicketList: React.FC = () => {
-  const { tickets } = useTickets();
+  const { tickets, loading, error } = useTickets();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
@@ -18,10 +18,10 @@ export const TicketList: React.FC = () => {
   const filteredTickets = useMemo(() => {
     return tickets.filter((ticket) => {
       const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+        ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
-      
+
       return matchesSearch && matchesStatus && matchesPriority;
     });
   }, [tickets, searchTerm, statusFilter, priorityFilter]);
@@ -67,7 +67,21 @@ export const TicketList: React.FC = () => {
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow mb-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+          <p className="font-medium">Error loading tickets</p>
+          <p className="text-sm mt-1">{error}</p>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+          <p className="mt-4 text-gray-600">Loading tickets...</p>
+        </div>
+      ) : (
+        <>
+          <div className="bg-white rounded-lg shadow mb-6">
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="relative flex-1">
@@ -82,7 +96,7 @@ export const TicketList: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <div className="flex space-x-2">
               <div className="relative">
                 <select
@@ -98,7 +112,7 @@ export const TicketList: React.FC = () => {
                   <option value="closed">Closed</option>
                 </select>
               </div>
-              
+
               <div className="relative">
                 <select
                   className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -112,14 +126,14 @@ export const TicketList: React.FC = () => {
                   <option value="urgent">Urgent</option>
                 </select>
               </div>
-              
+
               <Button variant="outline" leftIcon={<Filter size={16} />}>
                 More Filters
               </Button>
             </div>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -149,7 +163,7 @@ export const TicketList: React.FC = () => {
                 filteredTickets.map((ticket) => {
                   const requester = getUserById(ticket.createdBy);
                   const assignee = ticket.assignedTo ? getUserById(ticket.assignedTo) : null;
-                  
+
                   return (
                     <tr key={ticket.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -206,6 +220,8 @@ export const TicketList: React.FC = () => {
           </table>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };
