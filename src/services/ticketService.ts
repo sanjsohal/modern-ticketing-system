@@ -1,25 +1,40 @@
 import { Ticket, Comment, Attachment } from '../types';
 import { auth } from '../config/firebase';
-import { getAuth, getIdToken } from 'firebase/auth';
+import { getIdToken } from 'firebase/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 // Helper function to get authorization headers
 const getAuthHeaders = async (): Promise<HeadersInit> => {
-  const token = auth.currentUser ? await getIdToken(auth.currentUser, false) : null;
-  return {
+  const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
   };
+
+  console.log('Current user:', auth.currentUser?.email || 'No user logged in');
+
+  if (auth.currentUser) {
+    try {
+      const token = await getIdToken(auth.currentUser, false);
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('Token added to headers:', token.substring(0, 20) + '...');
+      }
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+    }
+  }
+
+  return headers;
 };
 
 // Fetch all tickets from the backend
 export const fetchTickets = async (): Promise<Ticket[]> => {
   try {
-    console.log(getAuthHeaders());
-    const response = await fetch(`${API_BASE_URL}/tickets`, {
+    const headers = await getAuthHeaders();
+    console.log('Request headers:', headers);
+    const response = await fetch(`${API_BASE_URL}/api/tickets`, {
       method: 'GET',
-      headers: await getAuthHeaders(),
+      headers,
     });
 
     if (!response.ok) {
@@ -37,7 +52,7 @@ export const fetchTickets = async (): Promise<Ticket[]> => {
 // Fetch a single ticket by ID
 export const fetchTicketById = async (id: string): Promise<Ticket> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/tickets/${id}`, {
       method: 'GET',
       headers: await getAuthHeaders(),
     });
@@ -59,7 +74,7 @@ export const createTicketAPI = async (
   ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'comments' | 'attachments'>
 ): Promise<Ticket> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets`, {
+    const response = await fetch(`${API_BASE_URL}/api/tickets`, {
       method: 'POST',
       headers: await getAuthHeaders(),
       body: JSON.stringify(ticket),
@@ -80,7 +95,7 @@ export const createTicketAPI = async (
 // Update an existing ticket
 export const updateTicketAPI = async (ticket: Ticket): Promise<Ticket> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets/${ticket.id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/tickets/${ticket.id}`, {
       method: 'PUT',
       headers: await getAuthHeaders(),
       body: JSON.stringify(ticket),
@@ -101,7 +116,7 @@ export const updateTicketAPI = async (ticket: Ticket): Promise<Ticket> => {
 // Delete a ticket
 export const deleteTicketAPI = async (id: string): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/tickets/${id}`, {
       method: 'DELETE',
       headers: await getAuthHeaders(),
     });
@@ -121,7 +136,7 @@ export const addCommentAPI = async (
   comment: Omit<Comment, 'id' | 'ticketId' | 'createdAt'>
 ): Promise<Comment> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}/comments`, {
+    const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}/comments`, {
       method: 'POST',
       headers: await getAuthHeaders(),
       body: JSON.stringify(comment),
@@ -145,7 +160,7 @@ export const addAttachmentAPI = async (
   attachment: Omit<Attachment, 'id' | 'ticketId' | 'uploadedAt'>
 ): Promise<Attachment> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}/attachments`, {
+    const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}/attachments`, {
       method: 'POST',
       headers: await getAuthHeaders(),
       body: JSON.stringify(attachment),
