@@ -10,14 +10,12 @@ const getAuthHeaders = async (): Promise<HeadersInit> => {
     'Content-Type': 'application/json',
   };
 
-  console.log('Current user:', auth.currentUser?.email || 'No user logged in');
 
   if (auth.currentUser) {
     try {
       const token = await getIdToken(auth.currentUser, false);
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('Token added to headers:', token.substring(0, 20) + '...');
       }
     } catch (error) {
       console.error('Error getting auth token:', error);
@@ -31,7 +29,6 @@ const getAuthHeaders = async (): Promise<HeadersInit> => {
 export const fetchTickets = async (): Promise<Ticket[]> => {
   try {
     const headers = await getAuthHeaders();
-    console.log('Request headers:', headers);
     const response = await fetch(`${API_BASE_URL}/api/tickets`, {
       method: 'GET',
       headers,
