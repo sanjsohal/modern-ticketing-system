@@ -78,7 +78,7 @@ export const RecentTickets: React.FC = () => {
                     {getPriorityBadge(ticket.priority)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {format(ticket.updatedAt, 'MMM d, h:mm a')}
+                    {format(ticket.updatedAt, 'dd MMM yyyy, hh:mm a')}
                   </td>
                 </tr>
               ))}
