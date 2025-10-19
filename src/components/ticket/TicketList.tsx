@@ -6,7 +6,7 @@ import { useTickets } from '../../context/TicketContext';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
-import { Ticket, TicketStatus, TicketPriority } from '../../types';
+import { TicketStatus, TicketPriority } from '../../types';
 import { users } from '../../data/mockData';
 
 export const TicketList: React.FC = () => {
@@ -204,7 +204,7 @@ export const TicketList: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(ticket.updatedAt, 'MMM d, h:mm a')}
+                        {format(ticket.updatedAt, 'dd MMM yyyy, hh:mm a')}
                       </td>
                     </tr>
                   );
