@@ -7,6 +7,7 @@ import {
   addCommentAPI, 
   addAttachmentAPI 
 } from '../services/ticketService';
+import { useAuth } from './AuthContext';
 
 interface TicketContextType {
   tickets: Ticket[];
@@ -36,8 +37,14 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { loading: authLoading } = useAuth();
 
   useEffect(() => {
+    // Wait for auth to be ready before fetching tickets
+    if (authLoading) {
+      return; // Auth is still loading, don't fetch yet
+    }
+
     // Fetch tickets from backend API
     const loadTickets = async () => {
       try {
@@ -56,7 +63,7 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
 
     loadTickets();
-  }, []);
+  }, [authLoading]);
 
   const getTicketById = (id: string) => {
     return tickets.find(ticket => ticket.id === id);
