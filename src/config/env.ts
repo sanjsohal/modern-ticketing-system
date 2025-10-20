@@ -27,6 +27,10 @@ export const ENV = {
   // Feature Flags
   ENABLE_DEBUG: import.meta.env.VITE_ENABLE_DEBUG === 'true',
   ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
+
+  // Idle Timeout Configuration (converted to milliseconds)
+  IDLE_TIMEOUT: (parseInt(import.meta.env.VITE_IDLE_TIMEOUT) || 15) * 60 * 1000,
+  IDLE_WARNING_TIME: (parseInt(import.meta.env.VITE_IDLE_WARNING_TIME) || 1) * 60 * 1000,
 } as const;
 
 /**

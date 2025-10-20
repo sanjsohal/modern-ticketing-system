@@ -80,6 +80,14 @@ VITE_ENABLE_DEBUG         # Enable debug logging (true/false)
 VITE_ENABLE_ANALYTICS     # Enable analytics tracking (true/false)
 ```
 
+### Idle Timeout / Auto-Logout
+```
+VITE_IDLE_TIMEOUT         # Minutes before auto-logout (default: 15)
+VITE_IDLE_WARNING_TIME    # Warning time in minutes (default: 1)
+```
+
+See [IDLE_TIMEOUT.md](./IDLE_TIMEOUT.md) for detailed configuration.
+
 ## Using Environment Variables in Code
 
 Import the centralized environment configuration:
@@ -110,6 +118,17 @@ if (ENV.ENABLE_DEBUG) {
 
 For production deployments, set environment variables in your CI/CD platform:
 
+### Vercel
+**Important:** Vercel does NOT automatically use `.env.production` from your repository!
+
+1. Go to your Vercel project → Settings → Environment Variables
+2. Add each `VITE_*` variable manually
+3. Set appropriate environment scope (Production/Preview/Development)
+4. See `DEPLOYMENT.md` for detailed Vercel setup instructions
+
+### Netlify
+Add environment variables in the project dashboard under Settings → Environment Variables.
+
 ### GitHub Actions
 Add secrets in repository settings and use them in your workflow:
 ```yaml
@@ -119,9 +138,6 @@ Add secrets in repository settings and use them in your workflow:
     # ... other variables
   run: npm run build:prod
 ```
-
-### Vercel/Netlify
-Add environment variables in the project dashboard under Settings → Environment Variables.
 
 ## Troubleshooting
 
