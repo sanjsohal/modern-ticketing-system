@@ -24,10 +24,11 @@ This project uses environment-specific configuration for local development and p
 - Contains your local Firebase project credentials
 - Enables debug mode and disables analytics
 
-### `.env.production` (Production Build)
-- Used when building for production
-- Contains production Firebase credentials
-- Should be managed securely (not committed to Git)
+### `.env.production` (Production Build - Local Only)
+- Used when building for production **locally**
+- **Not committed to Git** (ignored by `.gitignore`)
+- **Not used by Vercel** - Vercel uses its own environment variables
+- Only useful for local production builds with `npm run build:prod`
 - Disables debug mode and enables analytics
 
 ### `.env.example` (Template)
@@ -119,12 +120,18 @@ if (ENV.ENABLE_DEBUG) {
 For production deployments, set environment variables in your CI/CD platform:
 
 ### Vercel
-**Important:** Vercel does NOT automatically use `.env.production` from your repository!
+**⚠️ IMPORTANT:** Vercel does NOT use `.env.production` from your repository!
+
+Environment variables must be configured in Vercel's dashboard:
 
 1. Go to your Vercel project → Settings → Environment Variables
-2. Add each `VITE_*` variable manually
+2. Add each `VITE_*` variable manually with your production values
 3. Set appropriate environment scope (Production/Preview/Development)
-4. See `DEPLOYMENT.md` for detailed Vercel setup instructions
+4. Redeploy after adding/updating environment variables
+
+**Common Mistake:** Having a `.env.production` file in your repository will cause Vercel to use those placeholder values instead of the dashboard values. Always ensure `.env.production` is in `.gitignore` and removed from Git tracking.
+
+See `DEPLOYMENT.md` for detailed Vercel setup instructions
 
 ### Netlify
 Add environment variables in the project dashboard under Settings → Environment Variables.

@@ -2,7 +2,14 @@
 
 ## Setting Up Environment Variables in Vercel
 
-Vercel **does not** automatically use `.env.production` from your repository. You must configure environment variables in the Vercel dashboard.
+⚠️ **CRITICAL:** Vercel **does not** automatically use `.env.production` from your repository. 
+
+If you have a `.env.production` file committed to your repository, Vercel will use those values instead of the ones configured in the dashboard. This is why `.env.production` must be:
+- Added to `.gitignore`
+- Removed from Git tracking
+- Never committed to your repository
+
+You must configure environment variables directly in the Vercel dashboard for them to be used in production.
 
 ### Step-by-Step Setup
 
