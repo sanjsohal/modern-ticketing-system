@@ -44,6 +44,7 @@ export const validateEnv = (): boolean => {
     'VITE_FIREBASE_STORAGE_BUCKET',
     'VITE_FIREBASE_MESSAGING_SENDER_ID',
     'VITE_FIREBASE_APP_ID',
+    'VITE_API_URL',
   ];
 
   const missing = required.filter((key) => !import.meta.env[key]);
