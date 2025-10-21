@@ -50,6 +50,7 @@ A modern, secure ticketing system built with React, TypeScript, Firebase, and Ta
 
 - **[Environment Setup Guide](./ENVIRONMENT_SETUP.md)** - Configure environment variables
 - **[Deployment Guide](./DEPLOYMENT.md)** - Deploy to Vercel or other platforms
+- **[Vercel Environment Variables Checklist](./VERCEL_ENV_CHECKLIST.md)** - ⚠️ **Must-read for Vercel deployments**
 - **[Idle Timeout Feature](./IDLE_TIMEOUT.md)** - Auto-logout configuration
 
 ## 🔐 Security Features
@@ -146,11 +147,16 @@ See [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) for complete guide.
 
 ### Vercel (Recommended)
 
+⚠️ **IMPORTANT**: Vercel requires manual environment variable configuration!
+
 1. **Connect your repository** to Vercel
 2. **Add environment variables** in Vercel dashboard
    - Go to Project Settings → Environment Variables
-   - Add all `VITE_*` variables
+   - Add all `VITE_*` variables (see checklist below)
+   - **Critical**: Set `VITE_API_URL` or it will default to localhost!
 3. **Deploy** - Vercel will automatically build and deploy
+
+📋 **Use the [Vercel Environment Variables Checklist](./VERCEL_ENV_CHECKLIST.md)** to ensure all variables are set.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 

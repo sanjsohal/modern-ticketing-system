@@ -1,5 +1,6 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, getIdToken } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { ENV } from '../config/env';
 
 interface AuthUser {
   id: string;
@@ -18,7 +19,7 @@ class AuthService {
   private apiUrl: string;
 
   constructor() {
-    this.apiUrl = import.meta.env.VITE_API_URL || '';
+    this.apiUrl = ENV.API_URL;
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {

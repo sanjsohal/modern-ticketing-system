@@ -20,6 +20,11 @@ You must configure environment variables directly in the Vercel dashboard for th
 
 2. **Add each environment variable**:
 
+   **⚠️ CRITICAL**: All variables must be added. Missing variables will cause failures.
+   
+   See `VERCEL_ENV_CHECKLIST.md` for a complete interactive checklist.
+
+   **Required Firebase Variables:**
    ```
    VITE_FIREBASE_API_KEY = your-production-api-key
    VITE_FIREBASE_AUTH_DOMAIN = your-production-project.firebaseapp.com
@@ -27,11 +32,22 @@ You must configure environment variables directly in the Vercel dashboard for th
    VITE_FIREBASE_STORAGE_BUCKET = your-production-project.appspot.com
    VITE_FIREBASE_MESSAGING_SENDER_ID = your-production-sender-id
    VITE_FIREBASE_APP_ID = your-production-app-id
-   VITE_FIREBASE_MEASUREMENT_ID = G-YYYYYYYYYY
+   ```
+
+   **Required API Variables:**
+   ```
    VITE_API_URL = https://api.yourproduction.com
+   ```
+   **⚠️ If VITE_API_URL is not set, the app will default to `http://localhost:3000` and fail in production!**
+
+   **Optional but Recommended:**
+   ```
+   VITE_FIREBASE_MEASUREMENT_ID = G-YYYYYYYYYY
    VITE_ENV = production
    VITE_ENABLE_DEBUG = false
    VITE_ENABLE_ANALYTICS = true
+   VITE_IDLE_TIMEOUT = 15
+   VITE_IDLE_WARNING_TIME = 1
    ```
 
 3. **Set environment scope**:

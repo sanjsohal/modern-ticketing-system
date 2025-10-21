@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:local": "vite --mode development",
-    "build": "vite build",
-    "build:prod": "vite build --mode production",
+    "verify-env": "node verify-env.js",
+    "build": "npm run verify-env && vite build",
+    "build:prod": "npm run verify-env && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "preview:prod": "vite preview --mode production"
