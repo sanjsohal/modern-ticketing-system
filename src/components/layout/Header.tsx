@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, Search, HelpCircle } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
-import { format } from 'date-fns';
+import { formatDate, DateFormats } from '../../utils/dateUtils';
 
 export const Header: React.FC = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
@@ -76,7 +76,7 @@ export const Header: React.FC = () => {
                           <div className="flex justify-between items-start">
                             <p className="text-sm font-medium text-gray-900">{notification.title}</p>
                             <span className="text-xs text-gray-500">
-                              {format(notification.createdAt, 'h:mm a')}
+                              {formatDate(notification.createdAt, DateFormats.TIME_ONLY)}
                             </span>
                           </div>
                           <p className="text-xs text-gray-600 mt-1">{notification.message}</p>

@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
 import { Search, Filter, Plus } from 'lucide-react';
 import { useTickets } from '../../context/TicketContext';
 import { Badge } from '../ui/Badge';
@@ -8,6 +7,7 @@ import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { TicketStatus, TicketPriority } from '../../types';
 import { users } from '../../data/mockData';
+import { formatDate } from '../../utils/dateUtils';
 
 export const TicketList: React.FC = () => {
   const { tickets, loading, error } = useTickets();
@@ -204,7 +204,7 @@ export const TicketList: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(ticket.updatedAt, 'dd MMM yyyy, hh:mm a')}
+                        {formatDate(ticket.updatedAt)}
                       </td>
                     </tr>
                   );

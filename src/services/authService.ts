@@ -15,20 +15,14 @@ export interface AuthResponse {
 }
 
 class AuthService {
-  private isLocalDev: boolean;
-  private apiBaseUrl: string;
+  private apiUrl: string;
 
   constructor() {
-    this.isLocalDev = import.meta.env.DEV;
-    this.apiBaseUrl = import.meta.env.VITE_API_URL || '';
+    this.apiUrl = import.meta.env.VITE_API_URL || '';
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    if (this.isLocalDev) {
-      return this.localLogin(email, password);
-    } else {
-      return this.iamLogin(email, password);
-    }
+    return this.iamLogin(email, password);
   }
 
   async signup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
@@ -36,37 +30,10 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
-    if (this.isLocalDev) {
-      return this.localLogout();
-    } else {
-      return this.iamLogout();
-    }
+    return this.iamLogout();
   }
 
-  private async localLogin(email: string, password: string): Promise<AuthResponse> {
-    try {
-      const response = await fetch('/api/auth/local/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 403 && errorData.emailNotVerified) {
-          return { user: null, error: 'Please verify your email before logging in' };
-        }
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      return { user: data.user };
-    } catch (error) {
-      return { user: null, error: 'Invalid credentials' };
-    }
-  }
+  
 
   private async iamLogin(email: string, password: string): Promise<AuthResponse> {
     try {
@@ -122,7 +89,7 @@ class AuthService {
     formData.append("file", file);
     formData.append("firebaseUserId", userId);
 
-    const response = await fetch(`${this.apiBaseUrl}/api/avatars/upload`, {
+    const response = await fetch(`${this.apiUrl}/api/avatars/upload`, {
       method: "POST",
       body: formData,
     });
@@ -189,9 +156,6 @@ class AuthService {
     }
   }
 
-  private async localLogout(): Promise<void> {
-    await fetch('/api/auth/local/logout', { method: 'POST' });
-  }
 
   private async iamLogout(): Promise<void> {
     await auth.signOut();
@@ -199,8 +163,7 @@ class AuthService {
 
   // Helper method to resend verification email
   async resendVerificationEmail(email: string, password: string): Promise<{ success: boolean; error?: string }> {
-    if (!this.isLocalDev) {
-      try {
+    try {
         // Sign in temporarily to resend verification
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
@@ -216,27 +179,10 @@ class AuthService {
       } catch (error) {
         return { success: false, error: 'Failed to resend verification email. Please check your credentials.' };
       }
-    } else {
-      try {
-        const response = await fetch('/api/auth/local/resend-verification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        
-        if (response.ok) {
-          return { success: true };
-        } else {
-          return { success: false, error: 'Failed to resend verification email' };
-        }
-      } catch (error) {
-        return { success: false, error: 'Failed to resend verification email' };
-      }
-    }
   }
 
   private async createUserInDatabase(user: AuthUser): Promise<void> {
-    const response = await fetch(`${this.apiBaseUrl}/api/users/register`, {
+    const response = await fetch(`${this.apiUrl}/api/users/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -259,7 +205,7 @@ class AuthService {
   private async getPhotoUrlByFirebaseUid(firebaseUserId: string): Promise<string> {
     if (!auth.currentUser) throw new Error("No user signed in");
     const token = await getIdToken(auth.currentUser, false);
-    const response = await fetch(`${this.apiBaseUrl}/api/avatars/photo-url/${firebaseUserId}`, {
+    const response = await fetch(`${this.apiUrl}/api/avatars/photo-url/${firebaseUserId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -279,9 +225,9 @@ class AuthService {
   
   // Notify backend about successful login using Firebase ID token
   private async notifyLoginWithToken(idToken: string): Promise<void> {
-    if (!this.apiBaseUrl) return; // Skip if backend base URL is not configured
+    if (!this.apiUrl) return; // Skip if backend base URL is not configured
     try {
-      const response = await fetch(`${this.apiBaseUrl}/api/users/me`, {
+      const response = await fetch(`${this.apiUrl}/api/users/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${idToken}`,

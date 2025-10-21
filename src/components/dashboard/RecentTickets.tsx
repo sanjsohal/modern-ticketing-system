@@ -1,6 +1,6 @@
 import React from 'react';
-import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { formatDate } from '../../utils/dateUtils';
 import { Card, CardHeader, CardTitle, CardBody } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { useTickets } from '../../context/TicketContext';
@@ -78,7 +78,7 @@ export const RecentTickets: React.FC = () => {
                     {getPriorityBadge(ticket.priority)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {format(ticket.updatedAt, 'dd MMM yyyy, hh:mm a')}
+                    {formatDate(ticket.updatedAt)}
                   </td>
                 </tr>
               ))}

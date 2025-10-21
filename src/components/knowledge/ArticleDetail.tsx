@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { formatDate, DateFormats } from '../../utils/dateUtils';
 import { ChevronLeft, ThumbsUp, ThumbsDown, Clock } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
@@ -106,7 +106,7 @@ export const ArticleDetail: React.FC = () => {
               
               <div className="flex items-center text-sm text-gray-500 mb-6">
                 <Clock className="h-4 w-4 mr-1" />
-                Last updated {format(article.updatedAt, 'MMMM d, yyyy')}
+                Last updated {formatDate(article.updatedAt, DateFormats.LONG_DATE)}
                 {author && (
                   <>
                     <span className="mx-2">•</span>

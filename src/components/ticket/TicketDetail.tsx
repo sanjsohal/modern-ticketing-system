@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { formatDate } from '../../utils/dateUtils';
 import { 
   ChevronLeft, 
   MessageSquare, 
@@ -156,7 +156,7 @@ export const TicketDetail: React.FC = () => {
             </div>
             <div className="flex items-center">
               <span className="text-sm text-gray-500 mr-2">Created:</span>
-              <span className="text-sm">{format(ticket.createdAt, 'MMM d, yyyy h:mm a')}</span>
+              <span className="text-sm">{formatDate(ticket.createdAt, 'MMM d, yyyy h:mm a')}</span>
             </div>
           </div>
         </div>
@@ -258,7 +258,7 @@ export const TicketDetail: React.FC = () => {
                                   )}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {format(comment.createdAt, 'MMM d, yyyy h:mm a')}
+                                  {formatDate(comment.createdAt, 'MMM d, yyyy h:mm a')}
                                 </p>
                               </div>
                             </div>
