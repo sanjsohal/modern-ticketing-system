@@ -1,8 +1,9 @@
 import { Ticket, Comment, Attachment } from '../types';
 import { auth } from '../config/firebase';
 import { getIdToken } from 'firebase/auth';
+import { ENV } from '../config/env';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = ENV.API_URL;
 
 // Helper function to get authorization headers
 const getAuthHeaders = async (): Promise<HeadersInit> => {
@@ -33,7 +34,7 @@ export const fetchTickets = async (): Promise<Ticket[]> => {
       method: 'GET',
       headers,
     });
-
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch tickets: ${response.statusText}`);
     }

@@ -20,7 +20,7 @@ class AuthService {
 
   constructor() {
     this.isLocalDev = import.meta.env.DEV;
-    this.apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    this.apiBaseUrl = import.meta.env.VITE_API_URL || '';
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -32,11 +32,7 @@ class AuthService {
   }
 
   async signup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
-    if (this.isLocalDev) {
-      return this.localSignup(email, password, name, avatarFile);
-    } else {
-      return this.iamSignup(email, password, name, avatarFile);
-    }
+    return this.iamSignup(email, password, name, avatarFile);
   }
 
   async logout(): Promise<void> {
@@ -134,43 +130,6 @@ class AuthService {
   return await response.text(); // this will be avatar URL
   }
 
-  private async localSignup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
-    try {
-      // For local development, we'll create a temporary user ID for avatar upload
-      const tempUserId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      let avatarUrl: string | undefined;
-
-      // Upload avatar if provided
-      if (avatarFile) {
-        try {
-          avatarUrl = await this.uploadAvatar(avatarFile, tempUserId);
-        } catch (uploadError) {
-          console.error('Avatar upload failed:', uploadError);
-          return { user: null, error: 'Failed to upload avatar. Please try again.' };
-        }
-      }
-
-      const response = await fetch('/api/auth/local/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, name, avatar: avatarUrl }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Signup failed');
-      }
-
-      return { 
-        user: null, // Don't return user until email is verified
-        emailVerificationSent: true,
-        error: 'Account created! Please check your email and click the verification link to complete registration.'
-      };
-    } catch (error) {
-      return { user: null, error: 'Failed to create account' };
-    }
-  }
 
   private async iamSignup(email: string, password: string, name: string, avatarFile?: File | null): Promise<AuthResponse> {
     try {
