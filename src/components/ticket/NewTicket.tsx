@@ -12,8 +12,8 @@ export const NewTicket: React.FC = () => {
   const { createTicket } = useTickets();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<TicketCategory>('general');
-  const [priority, setPriority] = useState<TicketPriority>('medium');
+  const [category, setCategory] = useState<TicketCategory>('GENERAL_INQUIRY');
+  const [priority, setPriority] = useState<TicketPriority>('MEDIUM');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ export const NewTicket: React.FC = () => {
       const newTicket = createTicket({
         title: title.trim(),
         description: description.trim(),
-        status: 'new',
+        status: 'OPEN',
         priority,
         category,
         createdBy: currentUser.id,

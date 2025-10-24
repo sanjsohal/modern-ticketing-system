@@ -8,6 +8,7 @@ interface AvatarProps {
   name?: string;
   size?: AvatarSize;
   className?: string;
+  onError?: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
 const sizeStyles: Record<AvatarSize, string> = {
@@ -17,13 +18,13 @@ const sizeStyles: Record<AvatarSize, string> = {
   lg: 'h-12 w-12 text-lg',
   xl: 'h-16 w-16 text-xl',
 };
-
 export const Avatar: React.FC<AvatarProps> = ({
   src,
   alt = 'Avatar',
   name,
   size = 'md',
   className = '',
+  onError,
 }) => {
   const initials = name
     ? name
@@ -45,10 +46,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           src={src}
           alt={alt}
           className="h-full w-full object-cover rounded-full"
-          onError={(e) => {
-            e.currentTarget.src = '';
-            e.currentTarget.onerror = null;
-          }}
+          onError={onError}
         />
       ) : (
         <span className="font-medium text-gray-600">{initials}</span>

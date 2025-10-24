@@ -9,11 +9,11 @@ export type User = {
 export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
 export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export type TicketCategory = 
-  | 'technical' 
-  | 'billing' 
-  | 'general' 
-  | 'feature_request' 
-  | 'bug_report';
+  | 'TECHNICAL_SUPPORT' 
+  | 'BILLING' 
+  | 'GENERAL_INQUIRY' 
+  | 'FEATURE_REQUEST' 
+  | 'BUG_REPORT';
 
 export type Ticket = {
   id: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Ticket, 
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../ui/Avatar';
+import { authService } from '../../services/authService';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: <BarChart2 size={20} /> },
@@ -25,6 +26,25 @@ const navItems = [
 export const Sidebar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { currentUser, logout } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState(currentUser?.photoURL ?? undefined);
+
+  useEffect(() => {
+    setAvatarUrl(currentUser?.photoURL ?? undefined);
+  }, [currentUser?.photoURL]);
+
+  // Use the private method via bracket notation
+  const handleAvatarError = async () => {
+    if (currentUser?.uid) {
+      try {
+        // @ts-ignore
+        const photoUrl = await authService['getPhotoUrlByFirebaseUid'](currentUser.uid);
+        setAvatarUrl(photoUrl ?? undefined);
+      } catch (error) {
+        setAvatarUrl(undefined);
+      }
+    }
+  };
+
   const location = useLocation();
 
   const toggleMobileMenu = () => {
@@ -138,7 +158,7 @@ export const Sidebar: React.FC = () => {
             {currentUser && (
               <div className="absolute bottom-0 w-full flex items-center px-4 py-3 border-t border-gray-200">
                 <div className="flex-shrink-0">
-                  <Avatar src={currentUser.photoURL ?? undefined} name={currentUser.displayName ?? currentUser.email ?? 'User'} size="sm" />
+                  <Avatar src={avatarUrl} name={currentUser.displayName ?? currentUser.email ?? 'User'} size="sm" onError={handleAvatarError} />
                 </div>
                 <div className="ml-3 min-w-0 flex-1">
                   <div className="text-sm font-medium text-gray-900 truncate">{currentUser.displayName ?? currentUser.email}</div>
@@ -161,3 +181,5 @@ export const Sidebar: React.FC = () => {
     </>
   );
 };
+
+

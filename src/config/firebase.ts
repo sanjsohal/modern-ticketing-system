@@ -1,14 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { ENV, validateEnv, logEnvironment } from './env';
+import { ENV, validateEnv } from './env';
 
 // Validate environment variables on initialization
 if (!validateEnv()) {
   console.error('❌ Firebase configuration is incomplete. Please check your .env.local file.');
 }
 
-// Log environment configuration in development
-logEnvironment();
 
 const firebaseConfig = {
   apiKey: ENV.FIREBASE.API_KEY,

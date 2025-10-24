@@ -57,20 +57,4 @@ export const validateEnv = (): boolean => {
   return true;
 };
 
-/**
- * Logs current environment configuration (non-sensitive info only)
- */
-export const logEnvironment = (): void => {
-  if (ENV.ENABLE_DEBUG) {
-    console.log('🔧 Environment Configuration:', {
-      mode: ENV.MODE,
-      env: ENV.ENV,
-      isDev: ENV.IS_DEV,
-      isProd: ENV.IS_PROD,
-      apiUrl: ENV.API_URL,
-      projectId: ENV.FIREBASE.PROJECT_ID,
-      enableDebug: ENV.ENABLE_DEBUG,
-      enableAnalytics: ENV.ENABLE_ANALYTICS,
-    });
-  }
-};
+

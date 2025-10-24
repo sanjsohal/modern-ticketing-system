@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { formatDate } from '../../utils/dateUtils';
 import { 
   ChevronLeft, 
@@ -10,28 +10,55 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useTickets } from '../../context/TicketContext';
+import { fetchTicketById } from '../../services/ticketService';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Card, CardBody } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
-import { Ticket, TicketStatus, User } from '../../types';
-import { users } from '../../data/mockData';
+import { TicketStatus, User } from '../../types';
+import { useUsers } from '../../context/UserContext';
 
 export const TicketDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { getTicketById, updateTicket, addComment } = useTickets();
+  const { updateTicket, addComment } = useTickets();
   const [newComment, setNewComment] = useState('');
   const [isInternal, setIsInternal] = useState(false);
+  const [ticket, setTicket] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { users } = useUsers();
 
-  const ticket = getTicketById(id as string);
-  
-  if (!ticket) {
+  useEffect(() => {
+    const fetchTicket = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchTicketById(id as string);
+        setTicket(data);
+      } catch (err: any) {
+        setError('Ticket not found or failed to fetch.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchTicket();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+        <h2 className="text-xl font-medium text-gray-900 mb-2">Loading Ticket...</h2>
+      </div>
+    );
+  }
+
+  if (error || !ticket) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
         <h2 className="text-xl font-medium text-gray-900 mb-2">Ticket Not Found</h2>
-        <p className="text-gray-500 mb-4">The ticket you're looking for doesn't exist or may have been removed.</p>
+        <p className="text-gray-500 mb-4">{error || "The ticket you're looking for doesn't exist or may have been removed."}</p>
         <Link to="/tickets">
           <Button variant="primary">Back to Tickets</Button>
         </Link>
@@ -72,15 +99,13 @@ export const TicketDetail: React.FC = () => {
 
   const getStatusBadge = (status: TicketStatus) => {
     switch (status) {
-      case 'new':
-        return <Badge variant="primary">New</Badge>;
-      case 'open':
+      case 'OPEN':
         return <Badge variant="warning">Open</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
-      case 'resolved':
+      case 'IN_PROGRESS':
+        return <Badge variant="secondary">In Progress</Badge>;
+      case 'RESOLVED':
         return <Badge variant="success">Resolved</Badge>;
-      case 'closed':
+      case 'CLOSED':
         return <Badge variant="default">Closed</Badge>;
     }
   };
@@ -117,21 +142,21 @@ export const TicketDetail: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
             <h1 className="text-xl font-semibold text-gray-900">{ticket.title}</h1>
             <div className="mt-2 sm:mt-0 space-x-2">
-              {ticket.status !== 'resolved' && ticket.status !== 'closed' && (
+              {ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
                 <Button 
                   variant="success" 
                   size="sm"
                   leftIcon={<CheckCircle size={16} />}
-                  onClick={() => handleStatusChange('resolved')}
+                  onClick={() => handleStatusChange('RESOLVED')}
                 >
                   Resolve
                 </Button>
               )}
-              {ticket.status === 'resolved' && (
+              {ticket.status === 'RESOLVED' && (
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => handleStatusChange('closed')}
+                  onClick={() => handleStatusChange('CLOSED')}
                 >
                   Close
                 </Button>
@@ -187,7 +212,7 @@ export const TicketDetail: React.FC = () => {
               >
                 <option value="unassigned">Unassigned</option>
                 {users
-                  .filter(user => user.role === 'agent')
+                  .filter(user => user.role === 'USER')
                   .map(agent => (
                     <option key={agent.id} value={agent.id}>
                       {agent.name}
