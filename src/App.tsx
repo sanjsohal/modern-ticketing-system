@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { TicketProvider } from './context/TicketContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { UserProvider } from './context/UserContext';
 import { MainLayout } from './components/layout/MainLayout';
 import { Dashboard } from './pages/Dashboard';
 import { LoginPage } from './pages/LoginPage';
@@ -180,11 +181,13 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <TicketProvider>
-          <NotificationProvider>
-            <AppContent />
-          </NotificationProvider>
-        </TicketProvider>
+        <UserProvider>
+          <TicketProvider>
+            <NotificationProvider>
+              <AppContent />
+            </NotificationProvider>
+          </TicketProvider>
+        </UserProvider>
       </AuthProvider>
     </BrowserRouter>
   );

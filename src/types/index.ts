@@ -3,11 +3,11 @@ export type User = {
   name: string;
   email: string;
   avatar: string;
-  role: 'admin' | 'agent' | 'customer';
+  role: 'admin' | 'agent' | 'customer' | 'USER';
 };
 
-export type TicketStatus = 'new' | 'open' | 'pending' | 'resolved' | 'closed';
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export type TicketCategory = 
   | 'technical' 
   | 'billing' 

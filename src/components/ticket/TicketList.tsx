@@ -6,11 +6,12 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { TicketStatus, TicketPriority } from '../../types';
-import { users } from '../../data/mockData';
 import { formatDate } from '../../utils/dateUtils';
+import { useUsers } from '../../context/UserContext';
 
 export const TicketList: React.FC = () => {
   const { tickets, loading, error } = useTickets();
+  const { users } = useUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
@@ -28,28 +29,26 @@ export const TicketList: React.FC = () => {
 
   const getStatusBadge = (status: TicketStatus) => {
     switch (status) {
-      case 'new':
-        return <Badge variant="primary">New</Badge>;
-      case 'open':
+      case 'OPEN':
         return <Badge variant="warning">Open</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
-      case 'resolved':
+      case 'IN_PROGRESS':
+        return <Badge variant="secondary">In Progress</Badge>;
+      case 'RESOLVED':
         return <Badge variant="success">Resolved</Badge>;
-      case 'closed':
+      case 'CLOSED':
         return <Badge variant="default">Closed</Badge>;
     }
   };
 
   const getPriorityBadge = (priority: TicketPriority) => {
     switch (priority) {
-      case 'low':
+      case 'LOW':
         return <Badge variant="default">Low</Badge>;
-      case 'medium':
+      case 'MEDIUM':
         return <Badge variant="warning">Medium</Badge>;
-      case 'high':
+      case 'HIGH':
         return <Badge variant="danger">High</Badge>;
-      case 'urgent':
+      case 'URGENT':
         return <Badge variant="danger">Urgent</Badge>;
     }
   };

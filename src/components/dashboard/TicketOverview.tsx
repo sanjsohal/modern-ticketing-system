@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardBody } from '../ui/Card';
+import { Card, CardBody } from '../ui/Card';
 import { Inbox, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useTickets } from '../../context/TicketContext';
 
@@ -7,10 +7,10 @@ export const TicketOverview: React.FC = () => {
   const { tickets } = useTickets();
   
   const totalTickets = tickets.length;
-  const openTickets = tickets.filter(ticket => ticket.status === 'open').length;
-  const pendingTickets = tickets.filter(ticket => ticket.status === 'pending').length;
+  const openTickets = tickets.filter(ticket => ticket.status === 'OPEN').length;
+  const pendingTickets = tickets.filter(ticket => ticket.status === 'IN_PROGRESS').length;
   const resolvedTickets = tickets.filter(ticket => 
-    ticket.status === 'resolved' || ticket.status === 'closed').length;
+    ticket.status === 'RESOLVED' || ticket.status === 'CLOSED').length;
   
   const cards = [
     {
